@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>jQuery UI Droppable - Default functionality</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://qa01-www.barclaycardus.com/servicing/css/base/build/themes/bcus/bcus-theme.css">
+    <link rel="stylesheet" type="text/css" href="https://qa01-www.barclaycardus.com/servicing//css/base/build/themes/bcus/sections/accountSummary.css">
+    <style>
+    
+        .ui-widgets {
+            display: inline-block;
+            position: fixed;
+            background-color: #efefef;
+            border: 1px solid #ddd;
+            z-index: 10000;
+            bottom: 0;
+            height: 20%;
+            width: 100%;
+        }
+        
+        .canvas-container {
+            position: fixed;
+            height: 80%;
+            top: 0;
+            left: 50%;
+            overflow: auto;
+            transform: translateX(-50%);
+
+        }
+        
+        .canvas {
+            margin: auto;
+            position: relative;
+        }
+        
+        .canvas-widget-holder {
+            min-height: 50px;
+        }
+        
+        .canvas-wrapper {
+            position: absolute;
+            border: 1px solid blue;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+        }
+        
+        .canvas-wrapper .delete {
+            display: none;
+            position: absolute;
+            top: 0;
+            right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .canvas-wrapper:hover {
+            border: 2px solid blue;
+        }
+        
+        .canvas-wrapper:hover .delete {
+            display: block;
+        }
+        
+        .icon {
+            display: block;
+            list-style: none;
+            width: 30px;
+            height: 30px;
+            padding: 0.5em;
+            margin: 10px 10px 10px 0;
+        }
+        
+        .icon-container {
+            display: inline-block;
+            vertical-align: top;
+            list-style: none;
+        }
+        
+        .icon {
+            color: #fff;
+            cursor: pointer;
+            width: 80px;
+            height: 80px;
+            background: #666;
+            border: 1px solid #333;
+            border-radius: 3px;
+        }
+
+        .preview-mode .canvas-wrapper {
+            display: none
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+
+   var pageLayout = {};
+        $(function () {
+            $(".draggable-component").draggable();
+            $(".droppable-component").droppable({
+                drop: function (event, ui) {
+                    $(ui.draggable[0]).css({ 'top': 0, 'left': 0 });
+                    var component = $(ui.draggable[0]).closest('.icon-container').attr("data-component-id");
+                    $(this).find('.canvas-widget-holder')
+                        .html($("#" + component).html());
+                    $(this).droppable("option", "disabled", true);
+
+                    pageLayout[$(this).attr('id' )] = component;
+
+                    localStorage.setItem("pageLayout", JSON.stringify(pageLayout));
+                }
+            });
+
+            $('.delete').on('click', function () {
+                var canvas = $(this).closest('.droppable-component');
+                canvas.droppable("option", "disabled", false);
+                canvas.find('.canvas-widget-holder')
+                    .html('');
+
+                pageLayout[$(canvas).attr('id')] = '';
+                localStorage.setItem("pageLayout",  JSON.stringify(pageLayout));
+
+            })
+        });
+
+        $(document).ready(function(){
+
+            if (typeof(Storage) !== "undefined") {
+                pageLayout = localStorage.getItem("pageLayout");
+
+                if( pageLayout !== null) {
+                    try{
+                        pageLayout = JSON.parse(pageLayout);
+                        for(var canvas in pageLayout){
+                            if(pageLayout.hasOwnProperty(canvas)){
+                                $('#'+canvas).find('.canvas-widget-holder').html($("#"+pageLayout[canvas]).html());
+                            }
+                        }
+                    }catch(e){
+                        pageLayout = {};
+                        console.log(e);
+                    }
+                    
+                }else {
+                    pageLayout = {};
+                }
+            } else {
+                // Sorry! No Web Storage support..
+            }
+
+            $('#preview').on('click',function(){
+                $('.canvas-container').toggleClass('preview-mode');
+            })
+        })
+    </script>
+</head>
+
+<body>
+    <div class="ui-widgets ">
+        <div class="">
+            <ul>
+                <li class="icon-container" data-component-id="header">
+                    <i class="draggable-component icon"> Header</i>
+                </li>
+                <li class="icon-container" data-component-id="footer">
+                    <i class="draggable-component icon"> Footer</i>
+                </li>
+                <li class="icon-container" data-component-id="accountTile">
+                    <i class="draggable-component  icon">Account Tile</i>
+                </li>
+                <li class="icon-container" data-component-id="paymentTile">
+                    <i class="draggable-component  icon">Payment Tile</i>
+                </li>
+                <li class="icon-container" data-component-id="rewardsTile">
+                    <i class="draggable-component  icon">Rewards Tile</i>
+                </li>
+
+                <li id="preview" class="icon-container" data-component-id="">
+                    <i class="preview icon">Preview</i>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <section class="canvas-container">
+
+        <div id="header-canvas" class="canvas droppable-component container">
+            <div class="canvas-wrapper">
+                <p class="delete">X</p>
+            </div>
+            <div class="canvas-widget-holder">
+                Page Header
+            </div>
+        </div>
+        <div id="body-canvas">
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div id="tile1-canvas" class="canvas droppable-component ">
+                        <div class="canvas-wrapper">
+                            <p class="delete">X</p>
+                        </div>
+                        <div class="canvas-widget-holder">
+                            Tile 1
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div id="tile2-canvas" class="canvas droppable-component ">
+                        <div class="canvas-wrapper">
+                            <p class="delete">X</p>
+                        </div>
+                        <div class="canvas-widget-holder">
+                            Tile 2
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div id="tile3-canvas" class="canvas droppable-component">
+                        <div class="canvas-wrapper">
+                            <p class="delete">X</p>
+                        </div>
+                        <div class="canvas-widget-holder">
+                            Tile 3
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="footer-canvas" class="canvas droppable-component container">
+                <div class="canvas-wrapper">
+                    <p class="delete">X</p>
+                </div>
+                <div class="canvas-widget-holder">
+                    Page footer
+                </div>
+            </div>
+    </section>
+    <section class="hidden" id="header">
+        <div id="loggedInNavigation">
+
+            <div id="b-secondary-nav" class="b-secondary-nav hidden-xs">
+
+                <div class="container">
+                    <nav class="navbar navbar-default hidden-xs b-secondary-navbar">
+                        <div class="navbar-header">
+                            <!-- ADA Skip Nav Link -->
+                            <a class="sr-only sr-only-focusable b-skip-link" data-track="adaSkipToContent" id="adaSkipToMain" href="#appBody">
+                                <span class="skiplink-text">Skip to main content</span>
+                            </a>
+
+                            <span class="secondary-nav-last-login" data-auto="secondary-nav-last-login">Last login: 03/30 at 2:50 PM ET via Web</span>
+
+                        </div>
+
+                        <div id="navbar">
+                            <ul class="nav navbar-nav navbar-right">
+                                <li id="secondary-navbar-messages" class="navbar-messages"><a href="/servicing/messageCenter"><span class="badge">1</span> New messages</a></li>
+
+
+                                <li>
+                                    <a data-auto="b-secondary-nav-security-center" href="/servicing/footerLinks?handleSecurity=" target="_blank">Security center</a>
+                                </li>
+
+                                <li>
+                                    <a data-auto="b-secondary-nav-contact-us" href="/servicing/messageCenter?goToComposePage=">Contact us</a>
+                                </li>
+
+                                <li>
+                                    <a data-auto="b-secondary-nav-accessibility" target="_blank" href="/servicing/accessibility">Accessibility</a>
+                                </li>
+
+
+                                <li>
+                                    <a data-auto="b-secondary-nav-feedback" href="/servicing/headerLinks?handleFeedback=">Feedback</a>
+                                </li>
+
+                                <li>
+                                    <a data-auto="b-secondary-nav-help" id="b-search-link" href="#" data-toggle="collapse" data-target="#b-search-bar" aria-expanded="false"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Help</a>
+                                </li>
+                                <li>
+                                    <a data-auto="b-secondary-nav-logout" class="b-secondary-link" href="/servicing/logout?rnd=1490902664062">Log out</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+                <div class="container b-secondary-navbar-subnav" id="b-search-container">
+                    <nav class="navbar navbar-default" role="navigation" id="submenu">
+                        <div class="collapse" id="b-search-bar">
+                            <ul class="nav navbar-nav  navbar-right">
+                                <li>
+                                    <form class="navbar-form" role="search" action="/servicing/WebSearch.action">
+                                        <div class="input-group">
+                                            <label for="searchBox" class="sr-only">Search for a help topic</label>
+                                            <input type="text" class="form-control" placeholder="Search for a help topic" name="keyWord" id="searchBox">
+                                            <div class="input-group-btn">
+                                                <label for="srch-btn" class="sr-only">Search</label>
+                                                <button class="btn btn-default" id="srch-btn" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+
+            </div>
+
+
+
+
+
+
+            <!-- Card Select -->
+            <div class="b-card-select-container fluid-container hidden-xs">
+                <div class="container b-card-select">
+                    <div class="row">
+                        <div class="col-sm-2" data-auto="selected-card-art">
+                            <a href="/servicing/accountSummary" data-auto="default-card-art-link" class="no-outline">
+                                <img alt="Visit Account summary for CommenceTM." class="b-card-art" src="https://qa01-gif.barclaycardus.com/servicing/be98f620/img/slm/plastic/default.png">
+                            </a>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="b-greeting-container multi-card-eligible">
+                                <p class="b-greeting"><span id="greeting-salutation">Welcome</span>, Jim</p>
+                                <p><span class="b-card-name" data-auto="selected-card-name">CommenceTM ...9822
+              
+               </span>
+                                </p>
+
+                            </div>
+                        </div>
+                        <div class="col-sm-4 text-right" data-auto="brand-logo">
+
+                            <img alt="Credit Card Logo" class="b-brand-logo" src="https://qa01-gif.barclaycardus.com/servicing/be98f620/img/base/header-logo.png">
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Main Nav - Tablet & Desktop -->
+            <nav class="navbar b-primary-nav hidden-xs">
+                <div class="container">
+                    <ul class="nav navbar-nav" id="b-primary-nav-links">
+                        <li data-auto="primary-nav-home" class="active dropdown">
+                            <a data-navtag="MAIN NAV:Home" data-track="main_NAV" data-auto="nav-home" href="/servicing/accountSummary" class="homeLinkAnchor nav-track no-dropdown"
+                                id="primaryHomeLink"><span class="glyphicon glyphicon-home"></span><span class="sr-only">Home</span></a>
+                        </li>
+                        <li data-auto="primary-nav-payments" class=" dropdown">
+                            <a data-auto="nav-payments" href="javascript:void(0)" data-toggle="dropdown" class="dropdown-toggle main" aria-expanded="false">Payments <span class="caret"></span></a>
+                            <ul class="dropdown-menu menu ">
+                                <li id="payments-grid-container" class="b-dropdown-grid-container ">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <h3 data-auto="subnav-title-payments">Manage your payments</h3>
+                                        </div>
+                                        <div id="payments-container">
+                                            <div class="col-sm-12">
+                                                <ul>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/Payment.action" data-auto="subnav-payments-onetime-payment" class="b-primary-nav-sublink">
+                            Make a payment
+                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/RepeatPayment.action" data-auto="subnav-payments-repeat-payment" class="b-primary-nav-sublink">
+                            Repeat payments
+                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/Payment.action?history=" data-auto="subnav-payments-payment-history" class="b-primary-nav-sublink">
+                            Payment activity
+                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li data-auto="primary-nav-activity-statements" class=" dropdown">
+                            <a data-auto="nav-activity-statements" href="javascript:void(0)" data-toggle="dropdown" class="dropdown-toggle main" aria-expanded="false">Activity &amp; Statements <span class="caret"></span></a>
+                            <ul class="dropdown-menu menu ">
+                                <li id="activity-statements-grid-container" class="b-dropdown-grid-container ">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <h3 data-auto="subnav-title-activity-statements">Activity &amp; Statements</h3>
+                                        </div>
+                                        <div class="col-sm-12">
+                                            <ul>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Activity &amp; Statements:Transactions" data-track="main_NAV" data-auto="subnav-activity-transactions"
+                                                        href="/servicing/activity" class="b-primary-nav-sublink nav-track">Transactions</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Activity &amp; Statements:Statements" data-track="main_NAV" data-auto="subnav-activity-statements"
+                                                        href="/servicing/mystatements?rnd=1490902664062" class="b-primary-nav-sublink nav-track">Statements</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Activity &amp; Statements:Spend analyzer" data-track="main_NAV" data-auto="subnav-activity-spendanalyzer"
+                                                        href="/servicing/spendAnalyzer?spendAnalyzerActivitySection" class="b-primary-nav-sublink nav-track">Spend analyzer</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li data-auto="primary-nav-rewards-benefits" class=" dropdown">
+                            <a data-auto="nav-rewards-benefits" href="javascript:void(0)" data-toggle="dropdown" class="dropdown-toggle main" aria-expanded="false">Rewards &amp; Benefits <span class="caret"></span></a>
+                            <ul class="dropdown-menu menu ">
+                                <li id="rewards-benefits-grid-container" class="b-dropdown-grid-container ">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <h3 data-auto="subnav-title-rewards-benefits">Rewards &amp; Benefits</h3>
+                                        </div>
+                                        <div id="rewards-benefits-container">
+                                            <div class="col-sm-6">
+                                                <ul>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/rewardsHub" data-auto="subnav-rewards-benefits-center" class="b-primary-nav-sublink">
+                            Rewards &amp; Benefits Center
+                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/rewardsHub?rewardsActivity=" data-auto="subnav-rewards-activity" class="b-primary-nav-sublink">
+                            Rewards activity
+                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/rewardsHub?earningRewards=" data-auto="subnav-rewards-earning" class="b-primary-nav-sublink">
+                            Earning Cash back
+                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <ul>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/rewardsHub?redeemBenefits=" data-auto="subnav-rewards-use" class="b-primary-nav-sublink">
+                            Using my Cash back
+                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-track="main_NAV" href="/servicing/rewardsHub?rewardsBenefits=" data-auto="subnav-rewards-card-benefits" class="b-primary-nav-sublink">
+                            My card benefits
+                        </a>
+                                                    </li>
+                                                    <li>
+
+
+                                                        <a data-track="main_NAV" href="/servicing/shop" data-auto="subnav-shop-rewards" class="b-primary-nav-sublink">
+                            Shop my rewards
+                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li data-auto="primary-nav-services" class=" dropdown">
+                            <a data-auto="nav-services" href="javascript:void(0)" data-toggle="dropdown" class="dropdown-toggle main" aria-expanded="false">Services <span class="caret"></span></a>
+                            <ul class="dropdown-menu menu dropdown-menu-right">
+                                <li id="services-grid-container" class="b-dropdown-grid-container b-dropdown-grid-container-three-column">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <h3 data-auto="subnav-title-services">Account services</h3>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <ul>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Your FICO<sup>®</sup> Score" data-track="main_NAV" data-auto="subnav-services-ficoscore"
+                                                        href="/servicing/ficoScore" class="b-primary-nav-sublink nav-track">Your FICO<sup>®</sup> Score</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:My travel" data-track="main_NAV" data-auto="subnav-services-travel-notification" href="/servicing/travelNotification?start"
+                                                        class="b-primary-nav-sublink nav-track">My travel</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Activated cards" data-track="main_NAV" data-auto="subnav-services-activate-card" href="/servicing/accountSettings#activateCard"
+                                                        class="b-primary-nav-sublink nav-track">Activated cards</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Account nickname" data-track="main_NAV" data-auto="subnav-services-account-nickname" href="/servicing/accountSettings#nickname"
+                                                        class="b-primary-nav-sublink nav-track">Account nickname</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Paperless statements" data-track="main_NAV" data-auto="subnav-services-paperless" href="/servicing/accountSettings#paperlessStatements"
+                                                        class="b-primary-nav-sublink nav-track">Paperless statements</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Authorized users" data-track="main_NAV" data-auto="subnav-services-addauthroize-user" href="/servicing/accountSettings#addAuthorizedUser"
+                                                        class="b-primary-nav-sublink nav-track">Authorized users</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <ul>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Privacy options" data-track="main_NAV" data-auto="subnav-services-privacy-options" href="/servicing/accountSettings#privacy"
+                                                        class="b-primary-nav-sublink nav-track">Privacy options</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Alerts" data-track="main_NAV" data-auto="subnav-services-account-alerts" href="/servicing/accountSettings#emailMobileAlerts"
+                                                        class="b-primary-nav-sublink nav-track">Alerts</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Balance transfer offers" data-track="main_NAV" data-auto="subnav-services-account-bt-offers"
+                                                        href="/servicing/accountSettings#btOffers" class="b-primary-nav-sublink nav-track">Balance transfer offers</a>
+                                                </li>
+                                                <li>
+                                                    <a data-navtag="MAIN NAV:Services:Manage your PIN" data-track="main_NAV" data-auto="subnav-services-manage-pin" href="/servicing/accountSettings#managePIN"
+                                                        class="b-primary-nav-sublink nav-track">Manage your PIN</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Change payment due date" data-track="main_NAV" data-auto="subnav-services-change-payment-due-date"
+                                                        href="/servicing/accountSettings#changePaymentDueDate" class="b-primary-nav-sublink nav-track">Change payment due date</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Request replacement card" data-track="main_NAV" data-auto="subnav-services-request-replacement-card"
+                                                        href="/servicing/accountSettings#requestReplacementCard" class="b-primary-nav-sublink nav-track">Request replacement card</a>
+                                                </li>
+
+
+
+
+                                            </ul>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <ul>
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Request credit line increase" data-track="main_NAV" data-auto="subnav-services-creditline-increase"
+                                                        href="/servicing/accountSettings#creditLineIncrease" class="b-primary-nav-sublink nav-track">Request credit line increase</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Order cash advance checks" data-track="main_NAV" data-auto="subnav-services-cash-advance-checks"
+                                                        href="/servicing/accountSettings#cashAdvanceChecks" class="b-primary-nav-sublink nav-track">Order cash advance checks</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Cardmember Agreement" data-track="main_NAV" data-auto="subnav-services-cma-request" href="/servicing/accountSettings#cmaRequest"
+                                                        class="b-primary-nav-sublink nav-track">Cardmember Agreement</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Purchase planner" data-track="main_NAV" data-auto="subnav-services-purchase-planner" href="/servicing/purchasePlanner?purchasePlannerIntroPage"
+                                                        class="b-primary-nav-sublink nav-track">Purchase planner</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Credit 101" data-track="main_NAV" data-auto="subnav-services-credit-education101" href="/servicing/financialTools?redirectToCreditEducation101"
+                                                        class="b-primary-nav-sublink nav-track">Credit 101</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Services:Guide to benefits" data-track="main_NAV" data-auto="subnav-services-cardBenefits" href="/servicing/accountSettings#cardBenefits"
+                                                        class="b-primary-nav-sublink nav-track">Guide to benefits</a>
+                                                </li>
+
+
+
+
+                                            </ul>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <ul>
+
+
+                                            </ul>
+
+                                        </div>
+
+
+                                    </div>
+                                </li>
+                            </ul>
+
+
+                        </li>
+
+                        <li data-auto="primary-nav-your-profile" class=" dropdown">
+
+
+
+
+
+
+
+
+
+                            <a data-auto="nav-your-profile" href="javascript:void(0)" data-toggle="dropdown" class="dropdown-toggle main" aria-expanded="false">Your profile <span class="caret"></span></a>
+
+                            <ul class="dropdown-menu menu dropdown-menu-right">
+                                <li id="your-profile-grid-container" class="b-dropdown-grid-container ">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <h3 data-auto="subnav-title-your-profile">Your profile</h3>
+                                        </div>
+
+
+
+
+
+
+
+
+
+
+
+                                        <div class="col-sm-6">
+
+
+
+                                            <ul>
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Your profile:Address &amp; telephone" data-track="main_NAV" data-auto="subnav-profile-address-telephone"
+                                                        href="/servicing/Profile.action#profile-addressTelephone" class="b-primary-nav-sublink nav-track">Address &amp; telephone</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Your profile:Email address" data-track="main_NAV" data-auto="subnav-profile-email-address" href="/servicing/Profile.action#profile-emailAddress"
+                                                        class="b-primary-nav-sublink nav-track">Email address</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Your profile:Username" data-track="main_NAV" data-auto="subnav-profile-username" href="/servicing/Profile.action#profile-username"
+                                                        class="b-primary-nav-sublink nav-track">Username</a>
+                                                </li>
+
+
+
+                                            </ul>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <ul>
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Your profile:Password" data-track="main_NAV" data-auto="subnav-profile-password" href="/servicing/Profile.action#profile-password"
+                                                        class="b-primary-nav-sublink nav-track">Password</a>
+                                                </li>
+
+
+
+
+
+                                                <li>
+
+
+                                                    <a data-navtag="MAIN NAV:Your profile:Bank accounts" data-track="main_NAV" data-auto="subnav-profile-bank-accounts" href="/servicing/Profile.action#profile-bankAccounts"
+                                                        class="b-primary-nav-sublink nav-track">Bank accounts</a>
+                                                </li>
+
+
+
+
+
+                                            </ul>
+
+                                        </div>
+
+
+                                    </div>
+                                </li>
+                            </ul>
+
+
+                        </li>
+
+
+
+                    </ul>
+                </div>
+
+            </nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div class="navbar-offcanvas navbar-offcanvas-touch visible-xs">
+                <ul class="nav navbar-nav b-compact-primary-nav">
+
+
+                    <li data-auto="primary-nav-home" class="selected  dropdown">
+
+
+
+                        <a data-auto="compact-nav-home" href="/servicing/accountSummary" class="main">Summary</a>
+
+
+
+
+                    </li>
+
+                    <li data-auto="primary-nav-payments" class=" dropdown">
+
+
+
+                        <a data-auto="compact-nav-payments" href="/servicing/Payment.action?initializeMobile=" class="main">Payments</a>
+
+
+
+
+                    </li>
+
+                    <li data-auto="primary-nav-activity-statements" class=" dropdown">
+
+
+
+                        <a data-auto="compact-nav-activity-statements" href="/servicing/activity" class="main">Activity</a>
+
+
+
+
+                    </li>
+
+                    <li data-auto="primary-nav-rewards-benefits" class=" dropdown">
+
+
+
+                        <a data-auto="compact-nav-rewards-benefits" href="/servicing/rewardsHub" class="main">Rewards &amp; Benefits</a>
+
+
+
+
+                    </li>
+
+                    <li data-auto="primary-nav-services" class=" dropdown">
+
+
+
+                        <a data-auto="compact-nav-services" href="/servicing/accountSettings" class="main">Services</a>
+
+
+
+
+                    </li>
+
+                    <li data-auto="primary-nav-your-profile" class=" dropdown">
+
+
+
+                        <a data-auto="compact-nav-your-profile" href="/servicing/Profile.action" class="main">Your profile</a>
+
+
+
+
+                    </li>
+
+
+                </ul>
+                <ul class="nav navbar-nav navbar-right b-compact-secondary-nav">
+                    <li>
+                        <a href="/servicing/footerLinks?handleSecurity=" target="_blank" data-auto="compact-secondary-nav-security-center">
+                            <span class="glyphicon glyphicon-lock"></span> Security center
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/servicing/headerLinks?handleContactUsPhone=" data-auto="compact-secondary-nav-contact-us">
+                            <span class="glyphicon glyphicon-earphone"></span> Contact us
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/servicing/accessibility" target="_blank" data-auto="compact-secondary-nav-accessibility">
+                            <span class="accessibility-icon"></span> Accessibility
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/servicing/headerLinks?handleFaq" data-auto="compact-secondary-nav-help">
+                            <span class="glyphicon glyphicon-search"></span> Help
+                        </a>
+                    </li>
+                    <li>
+                        <a data-auto="compact-menu-nav-logout" href="/servicing/logout?rnd=1490902664062">
+                            <span class="glyphicon glyphicon-log-out"></span> Log out
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+
+            <section id="compact-nav-container" class="compact-nav-container clearfix visible-xs">
+                <nav class="compact-navbar navbar navbar-default" role="navigation">
+                    <div class="container-fluid">
+                        <div class="navbar-header" data-auto="compact-navbar-header">
+
+                            <button id="compact-hamburger-button" data-auto="compact-hamburger-button" type="button" class="navbar-toggle offcanvas-toggle pull-left"
+                                data-toggle="offcanvas" data-target="#js-bootstrap-offcanvas">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span>
+                              <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                </span>
+                                </button>
+
+
+
+
+                                <img id="compact-navbar-brand" alt="Credit Card Logo" class="navbar-brand" src="https://qa01-gif.barclaycardus.com/servicing/be98f620/img/base/header-logo.png">
+
+
+
+                                <a data-auto="compact-menu-logout" class="btn btn-default pull-right" href="/servicing/logout?rnd=1490902664062">Log out</a>
+
+                        </div>
+                    </div>
+                </nav>
+            </section>
+
+
+
+        </div>
+    </section>
+
+    <section class="hidden" id="accountTile">
+        <div data-tile-location="tile-account">
+            <div class="tile account-tile" id="accountTile">
+                <div id="account-loader" class="tile-loader" style="display: none;">
+                    <ul class="tile-spinner">
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div data-tile-container="">
+                    <div class="tile-container">
+
+
+                        <div class="tile-title-container" data-auto="account-tile-title-container">
+                            <div class="tile-title">Current Balance
+                            </div>
+                        </div>
+
+
+                        <div class="tile-body-container" data-auto="account-tile-body-container">
+
+                            <div class="tile-message-container">
+                                <div class="tile-message">-$15,431.76</div>
+                            </div>
+
+
+
+                            <div class="tile-details-container multi-row">
+                                <div class="tile-details-item">
+                                    <div class="text">Available credit
+                                        <div class="tool-tip tooltip-trigger" data-container="body" data-html="true" data-trigger="click" title="" data-original-title="The amount of credit currently available for purchases, balance transfers and cash advances. Note: Your entire credit line cannot be used for cash advances."><span class="icon-info"></span></div>
+                                    </div>
+                                    <div class="value">$25,000.00</div>
+                                </div>
+                                <div class="tile-details-item">
+                                    <div class="text">Revolving credit line
+                                        <div class="tool-tip tooltip-trigger" data-container="body" data-html="true" data-trigger="click" title="" data-original-title="Your total amount of credit that can be used for purchases, balance transfers and cash advances. Note: Your entire credit line cannot be used for cash advances."><span class="icon-info"></span></div>
+                                    </div>
+                                    <div class="value">$25,000.00</div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="tile-action-container" data-auto="account-tile-action-container">
+                            <div class="tile-action-item text-left" data-auto="account-tile-action-item-text-left">
+                                <a href="#" id="balanceDetails" data-track="asumElement">
+                                    <div class="icon-circle-plus"></div>View balance details</a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="hidden" id="paymentTile">
+        <div data-tile-location="tile-payment">
+            <div class="tile payment-tile" id="paymentTile">
+                <div id="payment-loader" class="tile-loader" style="display: none;">
+                    <ul class="tile-spinner">
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div data-tile-container="">
+                    <div class="tile-container">
+
+                        <div class="tile-title-container" data-auto="payment-tile-title-container">
+                            <p class="tile-title">payment status</p>
+                        </div>
+
+                        <div class="tile-body-container" data-auto="payment-tile-body-container">
+                            <div class="tile-message-container">
+                                <div class="tile-message" data-auto="payment-tile-overview">
+                                    No payment is needed<br>at this time
+                                </div>
+                            </div>
+                            <div class="tile-details-container multi-row">
+                                <div class="tile-details-item">
+                                    <div class="text" data-auto="payment-tile-one-text">Minimum amount due
+                                    </div>
+                                    <div class="value" data-auto="payment-tile-one-value">$0.00</div>
+                                </div>
+                                <div class="tile-details-item">
+                                    <div class="text" data-auto="payment-tile-two-text">Statement balance
+                                        <div class="tool-tip tooltip-trigger" data-container="body" data-html="true" data-trigger="click" title="" data-original-title="Your account balance, as reflected on your last billing statement. To avoid paying interest, pay this amount by your payment due date."><span class="icon-info"></span></div> <br><span class="small">as of 03/15/2017</span></div>
+                                    <div class="value" data-auto="payment-tile-two-value">-$115.76</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tile-action-container" data-auto="payment-tile-action-container">
+                            <div class="tile-action-item text-left" data-auto="payment-tile-action-item-text-left">
+                                <a href="/servicing/Payment.action?history=" data-track="asumElement" class="btn btn-primary">Payment activity</a>
+                            </div>
+                            <div class="tile-action-item text-left" data-auto="payment-tile-action-item-text-right">
+                                <div class="pull-right">
+                                    <div class="icon-pdf pull-left"></div> <span id="viewStatement" class="pull-right statement-link">View Current<br>Statement</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="hidden" id="footer">
+        <footer id="appFooter" class="b-app-footer responsive" data-page-name="footer-accountSummary">
+            <div class="container">
+
+
+
+
+                <div class="row">
+                    <div class="col-md-8">
+
+                        <ul class="b-footer-links">
+
+
+
+
+                            <li><a href="/servicing/footerLinks?handlePrivacy=" data-auto="Privacy policy">Privacy policy</a></li>
+
+
+
+
+
+                            <li><a href="/servicing/footerLinks?handleSecurity=" data-auto="Security center" target="_blank">Security center</a></li>
+
+
+
+
+
+
+                            <li><a href="/servicing/accessibility" data-auto="Accessibility" target="_blank">Accessibility</a></li>
+
+
+
+
+
+
+
+                            <li><a href="/servicing/footerLinks?handleTerms=" data-auto="Terms of use">Terms of use</a></li>
+
+
+
+
+
+
+
+
+                            <li class="visible-xs">
+                                <a id="fullSite" href="/servicing/changeViewTemplate?start=">Full site</a>
+                            </li>
+
+                        </ul>
+
+                    </div>
+                    <div class="col-md-4 b-float-right-legacy">
+
+                        <p class="copyright" data-auto="copyright" tabindex="0">© Barclays Bank Delaware 2017</p>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+                <div class="row visible-md visible-lg">
+                    <div class="col-md-12">
+                        <a href="FakeOutAdServer.action" class="pull-right">Ad Server Fakeout Page</a>
+                    </div>
+                </div>
+
+
+            </div>
+        </footer>
+    </section>
+
+    <section class="hidden" id="rewardsTile">
+        <div data-tile-location="tile-rewards">
+            <div class="tile rewards-tile" id="rewardsTile">
+                <div id="rewards-loader" class="tile-loader" style="display: none;">
+                    <ul class="tile-spinner">
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div data-tile-container="">
+                    <div class="tile-container">
+                        <div class="tile-title-container">
+                            <div data-auto="rewards-tile-title" class="tile-title">Current Cash back </div>
+                        </div>
+
+                        <div class="tile-body-container">
+                            <div class="tile-message-container">
+                                <div data-auto="rewards-tile-balance" class="tile-message">
+                                    $580,000.00
+                                </div>
+                            </div>
+                            <div class="tile-details-container">
+                                <p data-auto="rewards-tile-date" class="tile-details-content">
+                                    Last redemption date<br><strong>03/29/2017</strong>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="tile-action-container hidden-xs">
+                            <div class="tile-action-item text-center">
+                                <a data-auto="rewards-tile-action" href="/servicing/Rewards.action" data-track="asumElement" class="btn btn-primary">Rewards &amp; Benefits Center</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>
